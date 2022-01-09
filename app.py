@@ -44,19 +44,18 @@ class App(QtWidgets.QWidget, main_window.Ui_Form):
         if len(files) == 0:
             return False
         i = 0
-        self.prg_manage.setRange(0, len(files))  # on set l'intervale de la progressbar
+        self.prg_manage.setRange(0, len(files))  # Set progressbar range
         for file in files:
             target_dir = dir_path / suffixes_dir.get(file.suffix, "Autres")
             target_dir.mkdir(exist_ok=True)
-            # si le fichier existe déjà dans un fichier on retourne un erreur
+            # FileExistsError if file exist in target directory
             try:
                 file.rename(target_dir / file.name)
             except FileExistsError:
-                print(
-                    f"le fichier '{file.name}' existe déjà dans le dossier {suffixes_dir.get(file.suffix, 'Autres')}.")
+                print(f"le fichier '{file.name}' existe déjà dans le dossier {suffixes_dir.get(file.suffix, 'Autres')}.")
 
             i += 1
-            self.prg_manage.setValue(i)  # on itère de 1 la valeur de i
+            self.prg_manage.setValue(i)  # Iterantion with ( 1, i ) for range
             time.sleep(0.025)
         time.sleep(2)
         self.prg_manage.setValue(0)
@@ -66,7 +65,7 @@ class App(QtWidgets.QWidget, main_window.Ui_Form):
         self.manage_suffixes_win.show()
 
     def run_browser(self):
-        """Lance l'explorateur de fichier"""
+        """Run files explorer"""
         self.browser_win = FileBrowser()
         self.browser_win.show()
 
@@ -95,14 +94,14 @@ class FileBrowser(QtWidgets.QMainWindow, browser.Ui_MainWindow):
         self.model = QtWidgets.QFileSystemModel()
         self.model.setRootPath((QtCore.QDir.rootPath()))
         self.treeView.setModel(self.model)
-        self.treeView.setSortingEnabled(True)  # trier les fichiers
+        self.treeView.setSortingEnabled(True)  # sort files
 
     def context_menu(self):
-        """affiche un menu avec le click droit de la souris"""
+        """Display context menu on mouse right click event"""
         menu = QtWidgets.QMenu()
 
         open = menu.addAction("Ouvrir")
-        open.triggered.connect(self.open_file)  # Au click droit on se connect a la fonction open_file
+        open.triggered.connect(self.open_file)  # On right click event connect open_file
         cursor = QtGui.QCursor()  # get position of cursor
 
         choose_dir_path = menu.addAction("Définir comme chemin d'accès")
@@ -111,18 +110,18 @@ class FileBrowser(QtWidgets.QMainWindow, browser.Ui_MainWindow):
         menu.exec_(cursor.pos())
 
     def get_path(self):
-        """Recup le path du tree widget et le set dans le line edit"""
+        """Get path on of the tree widget, and set path on the line edit"""
         index = self.treeView.currentIndex()
         dir_path = self.model.filePath(index)
         self.load_path.write_path(dir_path)
-        Win.le_show_dir_path.setText(PathToDir.read_path(self))  # Update le lineEdit avec le nouveau path
-        self.close()  # Fermer la fenêtre après avoir choisi le Path
+        Win.le_show_dir_path.setText(PathToDir.read_path(self))  # Update linedit with the new path
+        self.close()  # Close window after user choose a path
 
     def open_file(self):
-        """On ouvre le fichier depuis le context menu"""
-        index = self.treeView.currentIndex()  # on recup l'index selectioné
-        file_path = self.model.filePath(index)  # on recup le path
-        os.startfile(file_path)  # on lance le fichier
+        """Open file from the context menu"""
+        index = self.treeView.currentIndex()  # Get selected Index
+        file_path = self.model.filePath(index)  # Get Path
+        os.startfile(file_path)  # And start file
         print(file_path)
 
 
@@ -154,7 +153,7 @@ class SuffixesList(QtWidgets.QWidget, suffixes_window.Ui_Form):
 
         Validate = False
 
-        if directory.startswith("."):  # enlève le point au debut du dossier
+        if directory.startswith("."):  # Remove Point before Folder name
             directory = directory.replace(".", "")
 
         if suffix.startswith(".") and len(suffix) >= 3 and len(directory) >= 1:
@@ -184,7 +183,7 @@ class SuffixesList(QtWidgets.QWidget, suffixes_window.Ui_Form):
             self.lw_show_suffixes.addItem((f"{directory.title()}\t⬅\t{suffix}"))
             self.lw_show_suffixes.sortItems()
         elif suffix in suffixes_dict:
-            #Supprimer le text et set le style par défaut
+            # Remove text and set default style
             self.le_suffix.clear()
             self.le_dir.clear()
             self.le_suffix.setStyleSheet("")
@@ -202,11 +201,11 @@ class SuffixesList(QtWidgets.QWidget, suffixes_window.Ui_Form):
         """Remove suffix in Json file from list widget"""
         suffixes_list = Data().read_data()
         for selected_item in self.lw_show_suffixes.selectedItems():
-            item_select = selected_item.text().split()  # transforme en string puis en liste pour recup le dernier mots
+            item_select = selected_item.text().split()  # transform item_select to string and split to get the last word
             Data().remove_data(
-                item_select[-1])  # on retire le suffix du fichier Json , il correspond au dernier mot de la liste
+                item_select[-1])  # Remove selected suffix in json file ( last word of the list )
             self.lw_show_suffixes.takeItem(self.lw_show_suffixes.row(
-                selected_item))  # Retire les objets sélectionné, on récup le selected item l'objet sur le quel on couvle, takeItem retire l'item avec sont index
+                selected_item))  # Remove selected items, ( takeItem : remove item From item ID )
 
     def setup_css(self):
         self.setStyleSheet("color: #2C3E50;")
